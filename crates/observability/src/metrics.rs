@@ -156,6 +156,9 @@ mod tests {
     // @lat: [[tests#Metrics recorder guard drop behavior#Drop flips the gate off]]
     #[test]
     fn drop_flips_gate_off() {
+        // `OtelMeterProvider` is `()` without `metrics-otel`; keep the feature-agnostic
+        // `Default::default()` and silence the unit-arg lint that only fires in that build.
+        #[allow(clippy::unit_arg)]
         let guard = MetricsGuard::new(Default::default());
         assert!(observability_core::metrics_enabled());
         drop(guard);
