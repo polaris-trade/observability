@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust:
+    uses: polaris-trade/ci/.github/workflows/rust-ci.yml@main
+
+  # guard feature-flag combos build + observability-core stays free of
+  # opentelemetry/tracing-subscriber (heavy backends belong in leaf crate only).
+  feature-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: build default features
+        run: cargo build -p observability
+      - name: build all features
+        run: cargo build -p observability --all-features
+      - name: build no default features
+        run: cargo build -p observability --no-default-features
+      - name: build logging only
+        run: cargo build -p observability --no-default-features --features logging
+      - name: build otel-traces only
+        run: cargo build -p observability --no-default-features --features otel-traces
+      - name: build otel-logs only
+        run: cargo build -p observability --no-default-features --features otel-logs
+      - name: build metrics-prom only
+        run: cargo build -p observability --no-default-features --features metrics-prom
+      - name: build metrics-otel only
+        run: cargo build -p observability --no-default-features --features metrics-otel
+      - name: build bunyan only
+        run: cargo build -p observability --no-default-features --features bunyan
+
+      - name: core dep boundary (no otel / tracing-subscriber in observability-core)
+        run: |
+          cargo tree -p observability-core | grep -Eq 'opentelemetry|tracing-subscriber' && { echo "observability-core dep boundary violated"; exit 1; } || echo "core boundary clean"
