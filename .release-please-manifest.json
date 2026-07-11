@@ -1,0 +1,4 @@
+{
+  "crates/observability": "0.1.0",
+  "crates/observability-core": "0.1.0"
+}

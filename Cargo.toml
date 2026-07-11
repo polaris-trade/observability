@@ -1,0 +1,42 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.96.1"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/polaris-trade/observability"
+homepage = "https://github.com/polaris-trade"
+authors = ["0x67 <69191110+0x67@users.noreply.github.com>"]
+publish = false
+
+# Verified 0.31 otel matrix. metrics-exporter-otel 0.3.1 pins opentelemetry ^0.31,
+# and all three OTLP signals plus the metrics bridge must resolve to ONE opentelemetry
+# version, so the bridge gates the whole stack. Do not bump one otel crate alone.
+[workspace.dependencies]
+# hot-path core (observability-core)
+metrics = "0.24"
+hdrhistogram = "7"
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "time", "macros"] }
+# backend: tracing stack
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "fmt"] }
+tracing-appender = "0.2"
+tracing-bunyan-formatter = "0.3"
+# backend: opentelemetry 0.31
+tracing-opentelemetry = "0.32"
+opentelemetry = "0.31"
+opentelemetry_sdk = { version = "0.31", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.31", features = ["grpc-tonic", "http-proto"] }
+opentelemetry-appender-tracing = "0.31"
+# backend: metrics exporters
+metrics-exporter-prometheus = "0.17"
+metrics-exporter-otel = "0.3.1"
+# shared
+thiserror = "2.0.18"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
