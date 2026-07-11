@@ -1,0 +1,11 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    uses: polaris-trade/ci/.github/workflows/release-please.yml@main
+    secrets:
+      release-token: ${{ secrets.RELEASE_PLZ_TOKEN }}
