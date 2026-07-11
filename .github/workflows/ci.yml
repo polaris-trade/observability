@@ -16,25 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
 
-      - name: build default features
-        run: cargo build -p observability
-      - name: build all features
-        run: cargo build -p observability --all-features
-      - name: build no default features
-        run: cargo build -p observability --no-default-features
-      - name: build logging only
-        run: cargo build -p observability --no-default-features --features logging
-      - name: build otel-traces only
-        run: cargo build -p observability --no-default-features --features otel-traces
-      - name: build otel-logs only
-        run: cargo build -p observability --no-default-features --features otel-logs
-      - name: build metrics-prom only
-        run: cargo build -p observability --no-default-features --features metrics-prom
-      - name: build metrics-otel only
-        run: cargo build -p observability --no-default-features --features metrics-otel
-      - name: build bunyan only
-        run: cargo build -p observability --no-default-features --features bunyan
+      # pairwise coverage across both crates: every single feature + every pair + empty set.
+      # depth 2 keeps combo count bounded as features grow; cargo-hack owns the enumeration.
+      - name: feature powerset (depth 2)
+        run: cargo hack --workspace --feature-powerset --depth 2 check
+
+      # endpoints the depth-2 cap skips: shipped default set and everything on.
+      - name: default + all features
+        run: |
+          cargo check -p observability
+          cargo check -p observability --all-features
 
       - name: core dep boundary (no otel / tracing-subscriber in observability-core)
         run: |
