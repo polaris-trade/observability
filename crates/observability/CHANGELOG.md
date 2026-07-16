@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/polaris-trade/observability/compare/observability-v0.2.1...observability-v0.2.2) (2026-07-16)
+
+
+### Bug fixes
+
+* **pipeline:** honor RUST_LOG over config level in env filters ([#7](https://github.com/polaris-trade/observability/issues/7)) ([7ac0c7f](https://github.com/polaris-trade/observability/commit/7ac0c7facdcfdf96e82d8f09aae7c75b8c04e6cd))
+
 ## [0.2.1](https://github.com/polaris-trade/observability/compare/observability-v0.2.0...observability-v0.2.1) (2026-07-11)
 
 
