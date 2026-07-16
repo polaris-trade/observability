@@ -160,3 +160,33 @@ When writing new tests:
 3. Gate any DB/API tests with `#[ignore]`.
 4. Document in test comments when `--ignored` flag is required.
 5. **Test behavior, not language features** — do not write tests that verify language semantics (`Option::is_some()`, type casts, serde deserialization, default trait values). Tests should verify project-specific business logic.
+
+---
+
+# Code Growth Discipline (MANDATORY pre-write gate)
+
+Workspace-wide standard (mirrors root AGENTS.md and the operator's global config). Apply before writing, not during review.
+
+- New code: sketch module layout first. One concern per file; name the seam (trait impl, venue/channel, config vs logic). Projected >600 non-test LOC or a second concern: start as mod dir, never "split later".
+- Feature work: if the result would be too coupled or push a file past ~800 non-test LOC, land a split-first refactor commit (pure moves + `pub use` re-exports, gates green, zero behavior diff), then implement. Two commits, never one mixed.
+- Cohesive single impl block: fine at any size. Trigger is mixed concerns, not LOC.
+- Test mod >40% of file: sibling `tests.rs`.
+- Split mechanics: inherent impls split across files freely; one trait impl per file; child modules see parent-private fields, siblings need `pub(super)`; move by exact line-range extraction, never retype, never uniform-dedent (raw-string fixtures corrupt silently); keep external paths via `pub use`.
+- Hot-path inline: a new concrete (non-generic) fn on a per-message/per-record path reachable across a git-dep boundary gets `#[inline]` at write time. Generic fns: nothing, MIR export covers them. `#[inline(always)]`: only with a measured delta cited.
+- Validation honesty: a gate must compile the code it claims to validate. Feature-gated modules get `--features` in every validation command, spec, and CI caller.
+
+# Useless Test Ban (MANDATORY)
+
+A test must be able to fail from a project bug. Never write:
+
+- Derive/stdlib restatement: thiserror `#[error]` string equality, `#[derive(Default)]` variant choice, `#[from]` conversion in isolation, derived Clone/Debug/Eq works, plain serde roundtrip with no custom impl, `Option::is_some` after `Some`.
+- Field echo: constructor-stores-argument, struct-literal readback, a constant restated from the definition.
+- Duplicate coverage: the branch is already covered; name the covering test and skip.
+- Mock-call-count-only asserts with no observable output checked.
+- False confidence: assertion weaker than the test name claims. Verify the actual contract via readback, or delete.
+- Copy-pasted test doubles/encoders: they live once in `tests/support/`, per crate.
+- Per-impl re-proof of a generic contract: one `assert_contract<T: Trait>` helper, called per implementation.
+
+Keep (contract gates, not useless): wire/on-disk layout pins (size, alignment, discriminant, padding, format magic), codegen drift gates, determinism/replay gates, `Display` tests with a documented ops/log-matching rationale.
+
+Review rule: any new test matching a banned class = NEEDS_REVISION. Relay packets for test-writing subagents must include this ban list.
