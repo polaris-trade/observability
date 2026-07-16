@@ -1,0 +1,23 @@
+name: audit
+
+# RustSec advisory scan via ci/rust-audit.yml. Public repo, default github-hosted runner.
+# RUSTSEC-2026-0205 (scc, unsound, transitive) is a known informational finding from the
+# baseline sweep. cargo-audit fails only on vulnerability advisories, so it never trips the gate.
+
+on:
+  pull_request:
+    paths:
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+  push:
+    branches: [main]
+    paths:
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+  schedule:
+    - cron: "15 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    uses: polaris-trade/ci/.github/workflows/rust-audit.yml@main
