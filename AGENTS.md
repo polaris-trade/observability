@@ -46,6 +46,7 @@ NEVER write any of these in code comments, doc comments (`///`, `//!`), or inlin
 - Cross-crate references: `// see pipeline-sinks::pg::raw`
 - Short annotations: `TODO`, `FIXME`, `HACK`, `NOTE`, `WARNING`, `PERF`, `SECURITY`, `BUG`
 - `// SAFETY:` blocks with invariant justification
+- Inline `//` runs up to 4 lines when stating a non-obvious invariant or contract (never to restate code).
 
 ## Why
 

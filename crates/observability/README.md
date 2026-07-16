@@ -102,6 +102,14 @@ runtime gate helpers (`metrics_enabled`, `refresh_thread_gate`, `set_metrics_ena
 `METRICS_ON`) and the whole `observability_core` crate are re-exported, so a binary drives the
 hot-path gate through `observability` without a second dependency line.
 
+## Log level precedence
+
+Each sink's level filter is resolved as: a valid `RUST_LOG` value first, then the sink's own
+`level` (or the pipeline `level` fallback), then `"info"`. Setting `RUST_LOG` therefore overrides
+**every** sink's level uniformly, since each layer builds its filter from the same env var; the
+per-sink `level` applies only while `RUST_LOG` is unset. An empty `RUST_LOG=""` counts as set and
+yields `EnvFilter`'s empty default, not the config level.
+
 ## Building without backends
 
 Under `--no-default-features` the otel and recorder wiring is gated out; sinks that need a
